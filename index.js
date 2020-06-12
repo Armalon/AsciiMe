@@ -6,6 +6,8 @@ const imageToAscii = require("image-to-ascii");
 const fs = require('fs');
 var os = require("os");
 
+const filesDir = __dirname + '/files';
+
 // Feel free to change any options here according to the image-to-ascii lib manual
 // https://www.npmjs.com/package/image-to-ascii
 var imageToAsciiOptions = {
@@ -27,59 +29,51 @@ var imageToAsciiOptions = {
 const BOT_TOKEN = 'Put-your-telegram-bot-token-here';
 
 
-
-const bot = new Telegraf(BOT_TOKEN)
 const telegram = new Telegram(BOT_TOKEN); // , [options]
+const bot = new Telegraf(BOT_TOKEN)
 
+// Debugging middleware, can be removed
 bot.use(async (ctx, next) => {
-    // console.log('ctx', ctx);
-    
     const start = new Date()
     await next()
     const ms = new Date() - start
     console.log('Response time: %sms', ms)
 });
 
-const filesDir = __dirname + '/files';
-
-bot.start((ctx) => ctx.reply('Welcome'))
-bot.help((ctx) => ctx.reply('Send me a sticker'))
-bot.on('sticker', (ctx) => ctx.reply('👍'))
-bot.hears('hi', (ctx) => ctx.reply('Hey there'))
+bot.start((ctx) => ctx.reply('Привет, человек!'))
+bot.help((ctx) => ctx.reply('Просто пришли мне картинку с описанием на русском языке и я сделаю из нее команду.'))
+// bot.on('sticker', (ctx) => ctx.reply('👍'))
+bot.hears('Привет', (ctx) => ctx.reply('И тебе не хворать!'))
 
 bot.on('text', (ctx) => {
-    console.log('ctx', ctx);
+    // console.log('ctx', ctx);
+    //
+    // console.log('ctx.from', ctx.from);
+    //
+    // console.log('ctx.message', ctx.message);
+    //
+    // console.log('ctx.message.photo', ctx.message.photo);
 
-    console.log('ctx.from', ctx.from);
-
-    console.log('ctx.message', ctx.message);
-
-    console.log('ctx.message.photo', ctx.message.photo);
-
-
-
-    // console.log('ctx.db', ctx.db);
-    
-    ctx.reply('Hello World');
+    ctx.reply('Нич*го не понял, но очень интересно!');
 })
 
 bot.on('photo', (ctx) => {
-    console.log('ctx', ctx);
-
-    console.log('ctx.from', ctx.from);
-
-    console.log('ctx.message', ctx.message);
-
-    console.log('ctx.message.photo', ctx.message.photo);
+    // console.log('ctx', ctx);
+    //
+    // console.log('ctx.from', ctx.from);
+    //
+    // console.log('ctx.message', ctx.message);
+    //
+    // console.log('ctx.message.photo', ctx.message.photo);
 
     // console.log('ctx.db', ctx.db);
 
     var photoFileLink = telegram.getFileLink(ctx.message.photo[0]['file_id']);
 
-    console.log('photoFile', photoFileLink);
+    // console.log('photoFile', photoFileLink);
 
     photoFileLink.then((fileLink) => {
-        console.log('result', fileLink);
+        // console.log('result', fileLink);
 
         // asciify(fileLink, asciifyOptions, function (err, asciified) {
         //     if (err) throw err;
@@ -111,7 +105,7 @@ bot.on('photo', (ctx) => {
                     filesDir + '/' + '.bashrc',
                     'alias ' + captionNormalized + '="cat ' + filesDir + '/' + captionNormalized + '"' + os.EOL,
                     function (err) {
-                        console.log(err || 'Saved!');
+                        // console.log(err || 'Saved!');
                     }
                 );
             } else {
