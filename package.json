@@ -1,0 +1,17 @@
+{
+  "name": "asciime",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "global-tunnel-ng": "^2.7.1",
+    "image-to-ascii": "^3.0.12",
+    "telegraf": "^3.38.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
