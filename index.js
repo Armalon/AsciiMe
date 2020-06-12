@@ -28,6 +28,10 @@ var imageToAsciiOptions = {
 
 const BOT_TOKEN = 'Put-your-telegram-bot-token-here';
 
+// Creating an output folder if not exists
+if (!fs.existsSync(filesDir)){
+    fs.mkdirSync(filesDir);
+}
 
 const telegram = new Telegram(BOT_TOKEN); // , [options]
 const bot = new Telegraf(BOT_TOKEN)
@@ -75,29 +79,21 @@ bot.on('photo', (ctx) => {
     photoFileLink.then((fileLink) => {
         // console.log('result', fileLink);
 
-        // asciify(fileLink, asciifyOptions, function (err, asciified) {
-        //     if (err) throw err;
-        //
-        //     // Print to console
-        //     console.log('asciified==', asciified);
-        // });
-
         const captionNormalized = ctx.message.caption
-            ? ctx.message.caption.replace(/\W/g, '')
+            ? ctx.message.caption.replace(/[^а-я]/ig, '').toLowerCase()
             : null;
 
         if (!captionNormalized) {
-            return ctx.reply('Bad caption!');
+            return ctx.reply('Плохое описание!');
         }
 
         imageToAscii(fileLink, imageToAsciiOptions, (err, converted) => {
-
             if (!err) {
                 fs.writeFile(filesDir + '/' + captionNormalized, converted + os.EOL, function(err) {
                     if (err) {
                         return ctx.reply(err);
                     } else {
-                        return ctx.reply('Ok!');
+                        return ctx.reply('Супер! Вот такая команда получилась: ' + captionNormalized);
                     }
                 });
 
