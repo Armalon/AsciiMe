@@ -6,6 +6,7 @@
   "dependencies": {
     "global-tunnel-ng": "^2.7.1",
     "image-to-ascii": "^3.0.12",
+    "socks5-https-client": "^1.2.1",
     "telegraf": "^3.38.0"
   },
   "devDependencies": {},

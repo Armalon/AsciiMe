@@ -1,6 +1,7 @@
 const Telegraf = require('telegraf');
 const Telegram = require('telegraf/telegram');
-
+const https = require('http');
+const SocksAgent = require('socks5-https-client/lib/Agent');
 const imageToAscii = require("image-to-ascii");
 
 const fs = require('fs');
@@ -26,6 +27,22 @@ var imageToAsciiOptions = {
     },
 }
 
+const socksAgent = new SocksAgent({
+    socksHost: 'hostname',
+    socksPort: 'port',
+    socksUsername: 'user',
+    socksPassword: 'pass'
+});
+
+const telegramConfig = {
+    // Or comment out the line below if Proxy isn't required
+    agent: socksAgent
+};
+
+const telegrafConfig = {
+    telegram: telegramConfig
+};
+
 const BOT_TOKEN = 'Put-your-telegram-bot-token-here';
 
 // Creating an output folder if not exists
@@ -33,8 +50,8 @@ if (!fs.existsSync(filesDir)){
     fs.mkdirSync(filesDir);
 }
 
-const telegram = new Telegram(BOT_TOKEN); // , [options]
-const bot = new Telegraf(BOT_TOKEN)
+const telegram = new Telegram(BOT_TOKEN, telegramConfig); // , [options]
+const bot = new Telegraf(BOT_TOKEN, telegrafConfig)
 
 // Debugging middleware, can be removed
 bot.use(async (ctx, next) => {
@@ -87,28 +104,53 @@ bot.on('photo', (ctx) => {
             return ctx.reply('Плохое описание!');
         }
 
-        imageToAscii(fileLink, imageToAsciiOptions, (err, converted) => {
-            if (!err) {
-                fs.writeFile(filesDir + '/' + captionNormalized, converted + os.EOL, function(err) {
-                    if (err) {
-                        return ctx.reply(err);
-                    } else {
-                        return ctx.reply('Супер! Вот такая команда получилась: ' + captionNormalized);
-                    }
-                });
+        const finalFileName = filesDir + '/' + captionNormalized;
 
-                fs.appendFile(
-                    filesDir + '/' + '.bashrc',
-                    'alias ' + captionNormalized + '="cat ' + filesDir + '/' + captionNormalized + '"' + os.EOL,
-                    function (err) {
-                        // console.log(err || 'Saved!');
-                    }
-                );
-            } else {
-                return ctx.reply(err);
-            }
-            // console.log(err || converted);
+        // Downloading file through the same socksAgent
+        const file = fs.createWriteStream(finalFileName);
+        const httpRequest = https.get(
+            fileLink,
+            {
+                agent: socksAgent,
+            }, function(response) {
+                response.pipe(file);
+            });
+
+        httpRequest.on('close', function() {
+            imageToAscii(finalFileName, imageToAsciiOptions, (err, converted) => {
+                if (!err) {
+                    fs.writeFile(finalFileName, converted + os.EOL, function(err) {
+                        if (err) {
+                            return ctx.reply(err);
+                        } else {
+                            return ctx.reply('Супер! Вот такая команда получилась: ' + captionNormalized);
+                        }
+                    });
+
+                    fs.appendFile(
+                        filesDir + '/' + '.bashrc',
+                        'alias ' + captionNormalized + '="cat ' + filesDir + '/' + captionNormalized + '"' + os.EOL,
+                        function (err) {
+                            // console.log(err || 'Saved!');
+                        }
+                    );
+                } else {
+                    return ctx.reply(err);
+                }
+                // console.log(err || converted);
+            });
         });
+
+        httpRequest.on('error', function(err) {
+            return ctx.reply('Image downloading error: ' + err);
+        });
+
+        httpRequest.on('timeout', function () {
+            return ctx.reply('Image downloading timeout');
+        });
+    })
+    .catch((err) => {
+        return ctx.reply(err);
     });
 
 
