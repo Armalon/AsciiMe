@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "dotenv": "^8.2.0",
     "global-tunnel-ng": "^2.7.1",
     "image-to-ascii": "^3.0.12",
     "socks5-https-client": "^1.2.1",

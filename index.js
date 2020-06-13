@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const Telegraf = require('telegraf');
 const Telegram = require('telegraf/telegram');
 const https = require('http');
@@ -28,15 +30,14 @@ var imageToAsciiOptions = {
 }
 
 const socksAgent = new SocksAgent({
-    socksHost: 'hostname',
-    socksPort: 'port',
-    socksUsername: 'user',
-    socksPassword: 'pass'
+    socksHost: process.env.SOCKS_PROXY_HOST,
+    socksPort: process.env.SOCKS_PROXY_PORT,
+    socksUsername: process.env.SOCKS_PROXY_USERNAME,
+    socksPassword: process.env.SOCKS_PROXY_PASSWORD
 });
 
 const telegramConfig = {
-    // Or comment out the line below if Proxy isn't required
-    agent: socksAgent
+    agent: process.env.USE_PROXY ? socksAgent : null
 };
 
 const telegrafConfig = {
@@ -50,8 +51,8 @@ if (!fs.existsSync(filesDir)){
     fs.mkdirSync(filesDir);
 }
 
-const telegram = new Telegram(BOT_TOKEN, telegramConfig); // , [options]
-const bot = new Telegraf(BOT_TOKEN, telegrafConfig)
+const telegram = new Telegram(process.env.BOT_TOKEN, telegramConfig); // , [options]
+const bot = new Telegraf(process.env.BOT_TOKEN, telegrafConfig)
 
 // Debugging middleware, can be removed
 bot.use(async (ctx, next) => {
@@ -111,7 +112,7 @@ bot.on('photo', (ctx) => {
         const httpRequest = https.get(
             fileLink,
             {
-                agent: socksAgent,
+                agent: process.env.USE_PROXY ? socksAgent : null,
             }, function(response) {
                 response.pipe(file);
             });
