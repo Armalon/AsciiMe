@@ -130,7 +130,7 @@ bot.on('photo', (ctx) => {
 
                     fs.appendFile(
                         filesDir + '/' + '.bashrc',
-                        'alias ' + captionNormalized + '="cat ' + filesDir + '/' + captionNormalized + '"' + os.EOL,
+                        'alias ' + captionNormalized + '="cat \'' + filesDir + '/' + captionNormalized + '\'"' + os.EOL,
                         function (err) {
                             // console.log(err || 'Saved!');
                         }
